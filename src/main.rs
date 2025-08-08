@@ -1,15 +1,31 @@
 mod core;
 
 use anyhow::Result;
-use core::error::{ErrorContext, ErrorType};
+use clap::Parser;
+use core::cli::{Cli, Commands};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    run().await.with_context_type(ErrorType::Cli, "application startup")?;
+    let cli = Cli::parse();
+
+    match cli.get_command() {
+        Commands::Chat { agent } => handle_chat(agent.as_deref()).await?,
+        Commands::ListAgents => handle_list_agents().await?,
+    }
+
     Ok(())
 }
 
-async fn run() -> Result<()> {
-    println!("Chatbot LLM Application Starting...");
+async fn handle_chat(agent: Option<&str>) -> Result<()> {
+    match agent {
+        Some(name) => println!("Starting chat with agent: {}", name),
+        None => println!("Starting chat with default agent"),
+    }
+    Ok(())
+}
+
+async fn handle_list_agents() -> Result<()> {
+    println!("Available agents:");
+    println!("  - default (built-in agent)");
     Ok(())
 }
