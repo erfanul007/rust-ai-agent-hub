@@ -1,5 +1,5 @@
 [package]
-name = "chatbot-llm"
+name = "rust-ai-agent-hub"
 version = "0.1.0"
 edition = "2021"
 

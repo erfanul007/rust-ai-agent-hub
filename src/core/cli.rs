@@ -1,8 +1,8 @@
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "chatbot-llm")]
-#[command(about = "A Rust-based chatbot application that interfaces with Large Language Models")]
+#[command(name = "rust-ai-agent-hub")]
+#[command(about = "A Rust-based AI agent hub that interfaces with Large Language Models")]
 #[command(version)]
 pub struct Cli {
     #[command(subcommand)]

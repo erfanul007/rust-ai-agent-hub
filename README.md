@@ -1,6 +1,6 @@
-# Chatbot LLM
+# Rust AI Agent Hub
 
-A Rust-native application for creating and managing multiple, specialized chatbot agents powered by Large Language Models (LLMs).
+A Rust-native application for creating and managing multiple, specialized AI agents powered by Large Language Models (LLMs).
 
 This project is designed to be a robust, configurable, and extensible framework for experimenting with different AI personas and capabilities. It is built with a focus on clean architecture, modern tooling, and a CLI-first approach.
 
@@ -29,15 +29,24 @@ For a detailed, step-by-step guide on how this project is being built, please se
 1.  **Clone the Repository:**
     ```sh
     git clone <repository-url>
-    cd chatbot-llm
+    cd rust-ai-agent-hub
     ```
 
-2.  **Configure API Key:**
-    Create a `.env` file in the project root and add your API key:
+2.  **Configure Environment Variables:**
+    Create a `.env` file in the project root based on `.env.example`:
     ```
     # .env
-    OPENAI_API_KEY="your-api-key-here"
+    OPENAI_API_KEY=your_openai_api_key_here
+    OPENAI_BASE_URL=https://api.openai.com/v1
+    OPENAI_MODEL=gpt-3.5-turbo
+    OPENAI_TIMEOUT_SECONDS=120
     ```
+    
+    **Required Variables:**
+    - `OPENAI_API_KEY`: Your OpenAI API key
+    - `OPENAI_BASE_URL`: The API endpoint (default: OpenAI's official endpoint)
+    - `OPENAI_MODEL`: The model to use (e.g., gpt-3.5-turbo, gpt-4)
+    - `OPENAI_TIMEOUT_SECONDS`: Request timeout in seconds
 
 3.  **Build the Project:**
     ```sh

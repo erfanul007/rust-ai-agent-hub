@@ -1,6 +1,6 @@
 # Development Plan
 
-This document outlines the milestone-driven development plan for the Rust Chatbot LLM application. Each milestone is designed to deliver a functional, testable version of the application, allowing for iterative progress and early feedback.
+This document outlines the milestone-driven development plan for the Rust AI Agent Hub application. Each milestone is designed to deliver a functional, testable version of the application, allowing for iterative progress and early feedback.
 
 ---
 
@@ -46,9 +46,9 @@ This document outlines the milestone-driven development plan for the Rust Chatbo
 
 3.  **Enhance the CLI:**
     *   Use `clap`'s more advanced features to add subcommands to the application:
-        *   `chatbot-llm chat`: The default command to start a conversation.
-        *   `chatbot-llm list-agents`: To show all available agents from the configuration.
-        *   `chatbot-llm chat --agent <AGENT_NAME>`: To start a chat with a specific agent.
+        *   `rust-ai-agent-hub chat`: The default command to start a conversation.
+    *   `rust-ai-agent-hub list-agents`: To show all available agents from the configuration.
+    *   `rust-ai-agent-hub chat --agent <AGENT_NAME>`: To start a chat with a specific agent.
 
 **Outcome of Milestone 2:** The application now supports multiple, distinctly defined agents. You can list them and choose which one to talk to, and the core logic is driven by a clean configuration file.
 

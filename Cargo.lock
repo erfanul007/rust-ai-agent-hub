@@ -140,18 +140,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9555578bc9e57714c812a1f84e4fc5b4d21fcb063490c624de019f7464c91268"
 
 [[package]]
-name = "chatbot-llm"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "dotenvy",
- "reqwest",
- "serde",
- "tokio",
-]
-
-[[package]]
 name = "clap"
 version = "4.5.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -881,6 +869,18 @@ dependencies = [
  "wasm-bindgen-futures",
  "web-sys",
  "winreg",
+]
+
+[[package]]
+name = "rust-ai-agent-hub"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "dotenvy",
+ "reqwest",
+ "serde",
+ "tokio",
 ]
 
 [[package]]
