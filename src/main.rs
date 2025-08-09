@@ -7,24 +7,23 @@ use core::cli::{Cli, Commands};
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
+    execute_command(cli.command()).await
+}
 
-    match cli.get_command() {
-        Commands::Chat { agent } => handle_chat(agent.as_deref()).await?,
-        Commands::ListAgents => handle_list_agents().await?,
+async fn execute_command(command: Commands) -> Result<()> {
+    match command {
+        Commands::Chat { agent } => start_chat_session(agent.as_deref()).await,
+        Commands::ListAgents => display_available_agents().await,
     }
+}
 
+async fn start_chat_session(agent_name: Option<&str>) -> Result<()> {
+    let selected_agent = agent_name.unwrap_or("default");
+    println!("Starting chat with agent: {}", selected_agent);
     Ok(())
 }
 
-async fn handle_chat(agent: Option<&str>) -> Result<()> {
-    match agent {
-        Some(name) => println!("Starting chat with agent: {}", name),
-        None => println!("Starting chat with default agent"),
-    }
-    Ok(())
-}
-
-async fn handle_list_agents() -> Result<()> {
+async fn display_available_agents() -> Result<()> {
     println!("Available agents:");
     println!("  - default (built-in agent)");
     Ok(())

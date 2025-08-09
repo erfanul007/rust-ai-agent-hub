@@ -1,52 +1,54 @@
 use anyhow::{Context, Result};
+use std::fmt;
 
-pub trait ErrorContext<T> {
-    fn with_context_type(self, context_type: ErrorType, operation: &str) -> Result<T>;
+pub trait ErrorContextExt<T> {
+    fn with_operation_context(self, error_type: ErrorCategory, operation: &str) -> Result<T>;
 }
 
-impl<T> ErrorContext<T> for Result<T> {
-    fn with_context_type(self, context_type: ErrorType, operation: &str) -> Result<T> {
-        self.with_context(|| format!("{}: {}", context_type.as_str(), operation))
+impl<T> ErrorContextExt<T> for Result<T> {
+    fn with_operation_context(self, error_type: ErrorCategory, operation: &str) -> Result<T> {
+        self.with_context(|| format!("{}: {}", error_type, operation))
     }
 }
 
 #[derive(Debug, Clone, Copy)]
-pub enum ErrorType {
-    Config,
-    Llm,
-    Cli,
-    Validation,
-    Network,
-    Io,
+pub enum ErrorCategory {
+    Configuration,
+    LanguageModel,
+    CommandLineInterface,
+    InputValidation,
+    NetworkOperation,
+    FileSystem,
 }
 
-impl ErrorType {
-    pub fn as_str(self) -> &'static str {
-        match self {
-            Self::Config => "Configuration error",
-            Self::Llm => "LLM operation failed",
-            Self::Cli => "CLI operation failed",
-            Self::Validation => "Validation failed",
-            Self::Network => "Network error",
-            Self::Io => "IO error",
-        }
+impl fmt::Display for ErrorCategory {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let message = match self {
+            Self::Configuration => "Configuration error",
+            Self::LanguageModel => "Language model operation failed",
+            Self::CommandLineInterface => "CLI operation failed",
+            Self::InputValidation => "Input validation failed",
+            Self::NetworkOperation => "Network operation failed",
+            Self::FileSystem => "File system operation failed",
+        };
+        write!(f, "{}", message)
     }
 }
 
-pub fn app_error(msg: &str) -> anyhow::Error {
-    anyhow::anyhow!("Application error: {}", msg)
+pub fn create_application_error(message: &str) -> anyhow::Error {
+    anyhow::anyhow!("Application error: {}", message)
 }
 
-pub fn validation_error(field: &str, reason: &str) -> anyhow::Error {
+pub fn create_validation_error(field: &str, reason: &str) -> anyhow::Error {
     anyhow::anyhow!("Validation failed for '{}': {}", field, reason)
 }
 
-pub fn context_error<T>(
+pub fn wrap_with_context<T>(
     result: std::result::Result<T, impl Into<anyhow::Error>>,
-    error_type: ErrorType,
+    error_category: ErrorCategory,
     operation: &str,
 ) -> Result<T> {
     result
         .map_err(Into::into)
-        .with_context(|| format!("{}: {}", error_type.as_str(), operation))
+        .with_context(|| format!("{}: {}", error_category, operation))
 }

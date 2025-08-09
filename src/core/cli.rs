@@ -6,15 +6,18 @@ use clap::{Parser, Subcommand};
 #[command(version)]
 pub struct Cli {
     #[command(subcommand)]
-    pub command: Option<Commands>,
+    command: Option<Commands>,
 }
 
 #[derive(Subcommand, Clone)]
 pub enum Commands {
+    /// Start an interactive chat session
     Chat {
+        /// Specify which agent to use for the conversation
         #[arg(short, long)]
         agent: Option<String>,
     },
+    /// Display all available agents
     ListAgents,
 }
 
@@ -25,7 +28,7 @@ impl Default for Commands {
 }
 
 impl Cli {
-    pub fn get_command(&self) -> Commands {
+    pub fn command(&self) -> Commands {
         self.command.clone().unwrap_or_default()
     }
 }
