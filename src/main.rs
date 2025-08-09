@@ -2,29 +2,32 @@ mod core;
 
 use anyhow::Result;
 use clap::Parser;
+use core::chat::ChatSession;
 use core::cli::{Cli, Commands};
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    dotenvy::dotenv().ok();
+    
     let cli = Cli::parse();
     execute_command(cli.command()).await
 }
 
 async fn execute_command(command: Commands) -> Result<()> {
+    let chat_session = ChatSession::new()?;
+    
     match command {
-        Commands::Chat { agent } => start_chat_session(agent.as_deref()).await,
-        Commands::ListAgents => display_available_agents().await,
+        Commands::Chat { agent } => chat_session.start_chat(agent.as_deref()).await,
+        Commands::ListAgents => display_available_agents(&chat_session).await,
     }
 }
 
-async fn start_chat_session(agent_name: Option<&str>) -> Result<()> {
-    let selected_agent = agent_name.unwrap_or("default");
-    println!("Starting chat with agent: {}", selected_agent);
-    Ok(())
-}
 
-async fn display_available_agents() -> Result<()> {
+
+async fn display_available_agents(chat_session: &ChatSession) -> Result<()> {
     println!("Available agents:");
-    println!("  - default (built-in agent)");
+    for agent in chat_session.list_agents() {
+        println!("  - {} (built-in agent)", agent);
+    }
     Ok(())
 }
