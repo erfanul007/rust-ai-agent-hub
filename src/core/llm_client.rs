@@ -68,11 +68,6 @@ impl LlmClient {
         })
     }
 
-    pub fn with_model(mut self, model: impl Into<String>) -> Self {
-        self.model = model.into();
-        self
-    }
-
     pub async fn send_conversation(
         &self,
         conversation: &ChatConversation,

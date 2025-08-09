@@ -41,10 +41,6 @@ impl ChatMessage {
         Self::new(MessageRole::User, content)
     }
 
-    pub fn from_assistant(content: impl Into<String>) -> Self {
-        Self::new(MessageRole::Assistant, content)
-    }
-
     pub fn from_system(content: impl Into<String>) -> Self {
         Self::new(MessageRole::System, content)
     }
@@ -62,18 +58,6 @@ impl ChatConversation {
 
     pub fn add_message(&mut self, message: ChatMessage) {
         self.messages.push(message);
-    }
-
-    pub fn message_count(&self) -> usize {
-        self.messages.len()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.messages.is_empty()
-    }
-
-    pub fn clear_messages(&mut self) {
-        self.messages.clear();
     }
 }
 

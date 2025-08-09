@@ -1,4 +1,4 @@
-use crate::core::agent::{Agent, AgentManager};
+use crate::core::agent::{AgentManager};
 use crate::core::data::{ChatConversation, ChatMessage};
 use crate::core::llm_client::LlmClient;
 use anyhow::Result;
