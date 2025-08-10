@@ -25,7 +25,7 @@ async fn execute_command(command: Commands) -> Result<()> {
 async fn display_available_agents(chat_session: &ChatSession) -> Result<()> {
     println!("Available agents:");
     for agent in chat_session.list_agents() {
-        println!("  - {} (built-in agent)", agent);
+        println!("  - {}", agent);
     }
     Ok(())
 }

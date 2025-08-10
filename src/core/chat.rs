@@ -12,7 +12,7 @@ pub struct ChatSession {
 impl ChatSession {
     pub fn new() -> Result<Self> {
         let llm_client = LlmClient::new()?;
-        let agent_manager = AgentManager::new();
+        let agent_manager = AgentManager::new()?;
         
         Ok(Self {
             llm_client,

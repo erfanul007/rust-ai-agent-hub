@@ -1,4 +1,19 @@
 use anyhow::Result;
+use config::{Config, ConfigError};
+use serde::Deserialize;
+use std::collections::HashMap;
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AgentConfig {
+    pub name: String,
+    pub system_prompt: String,
+    pub aliases: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AgentsConfig {
+    pub agents: HashMap<String, AgentConfig>,
+}
 
 #[derive(Debug, Clone)]
 pub struct Agent {
@@ -23,50 +38,77 @@ impl Agent {
     }
 }
 
-pub struct AgentManager;
+pub struct AgentManager {
+    agents_config: AgentsConfig,
+}
 
 impl AgentManager {
-    pub fn new() -> Self {
-        Self
+    pub fn new() -> Result<Self> {
+        let config = Self::load_config()?;
+        Ok(Self {
+            agents_config: config,
+        })
+    }
+
+    fn load_config() -> Result<AgentsConfig, ConfigError> {
+        let settings = Config::builder()
+            .add_source(config::File::with_name("agents"))
+            .build()?;
+        
+        settings.try_deserialize::<AgentsConfig>()
     }
 
     pub fn get_agent(&self, agent_name: &str) -> Result<Agent> {
-        match agent_name {
-            "default" => Ok(self.get_default_agent()),
-            "architect" | "solution-architect" => Ok(Agent::new(
-                "solution-architect",
-                "You are an expert Solution Architect with deep expertise in software architecture, system design, and enterprise solutions. You provide comprehensive technical guidance on:\n\n- Software Architecture Patterns (microservices, monoliths, serverless, event-driven, etc.)\n- System Design and Scalability (load balancing, caching, database design, distributed systems)\n- Cloud Architecture (AWS, Azure, GCP) and containerization (Docker, Kubernetes)\n- API Design (REST, GraphQL, gRPC) and integration patterns\n- Security Architecture and best practices\n- Performance optimization and monitoring strategies\n- Technology stack recommendations and trade-offs\n- Enterprise architecture frameworks (TOGAF, Zachman)\n- DevOps and CI/CD pipeline design\n- Data architecture and analytics solutions\n\nProvide detailed technical explanations, architectural diagrams descriptions, pros/cons analysis, and practical implementation guidance. Include specific technologies, tools, and best practices in your responses."
-            )),
-            "pirate" | "one-piece" | "straw-hat" => Ok(Agent::new(
-                "pirate-explorer",
-                "Ahoy there, nakama! I'm a spirited pirate inspired by the world of One Piece! 🏴‍☠️\n\nI embody the true spirit of adventure and freedom that drives every great pirate:\n\n🌊 **Adventure & Exploration**: I'm always ready to set sail for new horizons! Whether it's discovering uncharted territories, seeking legendary treasures, or embarking on grand adventures, I'll help you explore any topic with boundless enthusiasm and curiosity.\n\n⚓ **Freedom & Dreams**: Like the Straw Hat Pirates, I believe everyone should chase their dreams without limits! I'll encourage you to pursue your goals with unwavering determination and remind you that the impossible is just another word for 'adventure waiting to happen.'\n\n⚔️ **Standing Against Oppression**: I have zero tolerance for injustice! Whether it's unfair systems, bullying, or any form of oppression, I'll always stand with those who fight for what's right. Justice and protecting your nakama (friends) comes first!\n\n🍖 **Fun & Friendship**: Life's too short to be serious all the time! I bring energy, humor, and the power of friendship to every conversation. We're all crew members on this ship called life!\n\n💪 **Never Give Up**: Like Luffy always says, I never back down from a challenge! No matter how tough things get, there's always a way forward if you believe in yourself and your crew.\n\nSo, what adventure shall we embark on today, nakama? Let's make it legendary! 🌟"
-            )),
-            _ => Err(anyhow::anyhow!(
-                "Unknown agent '{}'. Available agents: {}. Use 'default' if no specific agent is needed.",
-                agent_name,
-                self.list_agents().join(", ")
-            )),
+        // First, try to find by exact name match
+        if let Some(agent_config) = self.agents_config.agents.get(agent_name) {
+            return Ok(Agent::new(&agent_config.name, &agent_config.system_prompt));
         }
-    }
 
-    fn get_default_agent(&self) -> Agent {
-        Agent::new(
-            "default",
-            "You are a helpful AI assistant. Provide clear, accurate, and helpful responses to user questions."
-        )
+        // Then, try to find by alias
+        for (_, agent_config) in &self.agents_config.agents {
+            if agent_config.aliases.contains(&agent_name.to_string()) {
+                return Ok(Agent::new(&agent_config.name, &agent_config.system_prompt));
+            }
+        }
+
+        // If not found, return error
+        Err(anyhow::anyhow!(
+            "Unknown agent '{}'. Available agents: {}. Use 'default' if no specific agent is needed.",
+            agent_name,
+            self.list_agents().join(", ")
+        ))
     }
 
     pub fn list_agents(&self) -> Vec<String> {
-        vec![
-            "default".to_string(),
-            "solution-architect (or architect)".to_string(),
-            "pirate (or one-piece, straw-hat)".to_string(),
-        ]
+        let mut agents = Vec::new();
+        
+        // Add default agent first if it exists
+        if let Some(default_config) = self.agents_config.agents.get("default") {
+            agents.push(Self::format_agent_display(&default_config.name, &default_config.aliases));
+        }
+        
+        // Add remaining agents
+        for (_, agent_config) in &self.agents_config.agents {
+            if agent_config.name != "default" {
+                agents.push(Self::format_agent_display(&agent_config.name, &agent_config.aliases));
+            }
+        }
+        
+        agents
+    }
+
+    fn format_agent_display(name: &str, aliases: &[String]) -> String {
+        if aliases.is_empty() {
+            name.to_string()
+        } else {
+            let aliases_str = aliases.join(", ");
+            format!("{} (or {})", name, aliases_str)
+        }
     }
 }
 
 impl Default for AgentManager {
     fn default() -> Self {
-        Self::new()
+        Self::new().expect("Failed to load agent configuration")
     }
 }
