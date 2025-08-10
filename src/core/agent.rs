@@ -1,7 +1,8 @@
-use anyhow::Result;
+use crate::core::error::{AppError, Result};
 use config::{Config, ConfigError};
 use serde::Deserialize;
 use std::collections::HashMap;
+use std::result::Result as StdResult;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct AgentConfig {
@@ -44,13 +45,14 @@ pub struct AgentManager {
 
 impl AgentManager {
     pub fn new() -> Result<Self> {
-        let config = Self::load_config()?;
+        let config = Self::load_config()
+            .map_err(|e| AppError::config_load_error(e.to_string()))?;
         Ok(Self {
             agents_config: config,
         })
     }
 
-    fn load_config() -> Result<AgentsConfig, ConfigError> {
+    fn load_config() -> StdResult<AgentsConfig, ConfigError> {
         let settings = Config::builder()
             .add_source(config::File::with_name("agents"))
             .build()?;
@@ -72,9 +74,8 @@ impl AgentManager {
         }
 
         // If not found, return error
-        Err(anyhow::anyhow!(
-            "Unknown agent '{}'. Available agents: {}. Use 'default' if no specific agent is needed.",
-            agent_name,
+        Err(AppError::agent_not_found(
+            agent_name.to_string(),
             self.list_agents().join(", ")
         ))
     }

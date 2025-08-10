@@ -1,6 +1,5 @@
 use crate::core::data::{ChatConversation, ChatMessage};
-use crate::core::error::{ErrorCategory, ErrorContextExt};
-use anyhow::Result;
+use crate::core::error::{AppError, Result};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::env;
@@ -41,8 +40,7 @@ struct Choice {
 impl LlmClient {
     pub fn new() -> Result<Self> {
         let api_key = env::var("OPENAI_API_KEY")
-            .map_err(anyhow::Error::from)
-            .with_operation_context(ErrorCategory::Configuration, "loading OpenAI API key")?;
+            .map_err(|_| AppError::missing_env_var("OPENAI_API_KEY"))?;
 
         let base_url =
             env::var("OPENAI_BASE_URL").unwrap_or_else(|_| "https://api.openai.com/v1".to_string());
@@ -57,8 +55,7 @@ impl LlmClient {
         let client = Client::builder()
             .timeout(Duration::from_secs(timeout_seconds))
             .build()
-            .map_err(anyhow::Error::from)
-            .with_operation_context(ErrorCategory::Configuration, "creating HTTP client")?;
+            .map_err(|e| AppError::http_client_error(e.to_string()))?;
 
         Ok(Self {
             client,
@@ -96,36 +93,24 @@ impl LlmClient {
             .header("Content-Type", "application/json")
             .json(&request)
             .send()
-            .await
-            .map_err(anyhow::Error::from)
-            .with_operation_context(ErrorCategory::NetworkOperation, "sending chat request")?;
+            .await?;
 
         if !response.status().is_success() {
-            let status = response.status();
+            let status = response.status().as_u16();
             let error_body = response.text().await.unwrap_or_else(|_| "Unable to read error response".to_string());
-            return Err(anyhow::anyhow!(
-                "API request failed with status {}: {}",
-                status,
-                error_body
-            ))
-            .with_operation_context(ErrorCategory::NetworkOperation, "validating response status");
+            return Err(AppError::api_response_error(status, error_body));
         }
 
         let chat_response: ChatResponse = response
             .json()
             .await
-            .map_err(anyhow::Error::from)
-            .with_operation_context(ErrorCategory::NetworkOperation, "parsing chat response")?;
+            .map_err(|e| AppError::response_parsing_error(e.to_string()))?;
 
         let assistant_message = chat_response
             .choices
             .into_iter()
             .next()
-            .ok_or_else(|| {
-                crate::core::error::create_application_error(
-                    "No response choices received from LLM",
-                )
-            })?
+            .ok_or_else(|| AppError::no_llm_response())?
             .message;
 
         Ok(ChatMessage::from_assistant(assistant_message.content))

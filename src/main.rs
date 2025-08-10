@@ -1,9 +1,9 @@
 mod core;
 
-use anyhow::Result;
 use clap::Parser;
 use core::chat::ChatSession;
 use core::cli::{Cli, Commands};
+use core::error::Result;
 
 #[tokio::main]
 async fn main() -> Result<()> {

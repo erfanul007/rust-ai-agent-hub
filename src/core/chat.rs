@@ -1,7 +1,7 @@
 use crate::core::agent::{AgentManager};
 use crate::core::data::{ChatConversation, ChatMessage};
+use crate::core::error::Result;
 use crate::core::llm_client::LlmClient;
-use anyhow::Result;
 use std::io::{self, Write};
 
 pub struct ChatSession {
