@@ -24,11 +24,11 @@ impl ChatSession {
         let agent_name = agent_name.unwrap_or("default");
         let agent = self.agent_manager.get_agent(agent_name)?;
         
-        println!("Starting chat with agent: {}", agent.name);
+        println!("Starting chat with agent: {}", agent.name());
         println!("Type 'quit' or 'exit' to end the conversation.\n");
 
         let mut conversation = ChatConversation::new();
-        conversation.add_message(ChatMessage::from_system(agent.system_prompt));
+        conversation.add_message(ChatMessage::from_system(agent.system_prompt()));
 
         self.chat_loop(&mut conversation).await
     }
@@ -50,7 +50,7 @@ impl ChatSession {
 
             match self.llm_client.send_conversation(conversation, None, None).await {
                 Ok(response) => {
-                    println!("Assistant: {}", response.content);
+                    println!("Assistant: {}", response.content());
                     conversation.add_message(response);
                 }
                 Err(e) => {

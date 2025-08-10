@@ -1,4 +1,4 @@
-use crate::core::data::{ChatConversation, ChatMessage, MessageRole};
+use crate::core::data::{ChatConversation, ChatMessage};
 use crate::core::error::{ErrorCategory, ErrorContextExt};
 use anyhow::Result;
 use reqwest::Client;
@@ -77,8 +77,8 @@ impl LlmClient {
         let messages: Vec<ApiMessage> = conversation
             .iter()
             .map(|msg| ApiMessage {
-                role: msg.role.to_string(),
-                content: msg.content.clone(),
+                role: msg.role().to_string(),
+                content: msg.content().to_string(),
             })
             .collect();
 
@@ -91,7 +91,7 @@ impl LlmClient {
 
         let response = self
             .client
-            .post(&format!("{}/chat/completions", self.base_url))
+            .post(format!("{}/chat/completions", self.base_url))
             .header("Authorization", format!("Bearer {}", self.api_key))
             .header("Content-Type", "application/json")
             .json(&request)
@@ -128,10 +128,7 @@ impl LlmClient {
             })?
             .message;
 
-        Ok(ChatMessage::new(
-            MessageRole::Assistant,
-            assistant_message.content,
-        ))
+        Ok(ChatMessage::from_assistant(assistant_message.content))
     }
 }
 

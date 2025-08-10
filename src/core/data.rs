@@ -25,8 +25,8 @@ impl fmt::Display for MessageRole {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatMessage {
-    pub role: MessageRole,
-    pub content: String,
+    role: MessageRole,
+    content: String,
 }
 
 impl ChatMessage {
@@ -43,6 +43,18 @@ impl ChatMessage {
 
     pub fn from_system(content: impl Into<String>) -> Self {
         Self::new(MessageRole::System, content)
+    }
+
+    pub fn from_assistant(content: impl Into<String>) -> Self {
+        Self::new(MessageRole::Assistant, content)
+    }
+
+    pub fn role(&self) -> &MessageRole {
+        &self.role
+    }
+
+    pub fn content(&self) -> &str {
+        &self.content
     }
 }
 

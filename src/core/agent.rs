@@ -2,8 +2,8 @@ use anyhow::Result;
 
 #[derive(Debug, Clone)]
 pub struct Agent {
-    pub name: String,
-    pub system_prompt: String,
+    name: String,
+    system_prompt: String,
 }
 
 impl Agent {
@@ -12,6 +12,14 @@ impl Agent {
             name: name.into(),
             system_prompt: system_prompt.into(),
         }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn system_prompt(&self) -> &str {
+        &self.system_prompt
     }
 }
 

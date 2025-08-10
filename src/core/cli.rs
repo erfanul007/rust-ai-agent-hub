@@ -10,7 +10,7 @@ pub struct Cli {
 }
 
 #[derive(Subcommand, Clone)]
-pub enum Commands {
+pub(crate) enum Commands {
     /// Start an interactive chat session
     Chat {
         /// Specify which agent to use for the conversation

@@ -27,6 +27,6 @@ impl fmt::Display for ErrorCategory {
     }
 }
 
-pub fn create_application_error(message: &str) -> anyhow::Error {
+pub(crate) fn create_application_error(message: &str) -> anyhow::Error {
     anyhow::anyhow!("Application error: {}", message)
 }
