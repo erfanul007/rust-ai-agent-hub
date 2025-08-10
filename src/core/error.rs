@@ -53,9 +53,6 @@ pub enum NetworkError {
 pub enum AgentError {
     #[error("Agent '{name}' not found. Available agents: {available}")]
     NotFound { name: String, available: String },
-
-    #[error("No response received from LLM")]
-    NoResponse,
 }
 
 /// Type alias for Results using our custom error type
@@ -93,10 +90,6 @@ impl AppError {
             name: name.into(),
             available: available.into(),
         })
-    }
-
-    pub fn no_llm_response() -> Self {
-        Self::Agent(AgentError::NoResponse)
     }
 
     pub fn config_load_error(reason: impl Into<String>) -> Self {

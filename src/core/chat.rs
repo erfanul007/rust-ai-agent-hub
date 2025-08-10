@@ -2,6 +2,7 @@ use crate::core::agent::{AgentManager};
 use crate::core::data::{ChatConversation, ChatMessage};
 use crate::core::error::Result;
 use crate::core::llm_client::LlmClient;
+use futures::stream::StreamExt;
 use std::io::{self, Write};
 
 pub struct ChatSession {
@@ -48,10 +49,33 @@ impl ChatSession {
 
             conversation.add_message(ChatMessage::from_user(user_input));
 
-            match self.llm_client.send_conversation(conversation, None, None).await {
-                Ok(response) => {
-                    println!("Assistant: {}", response.content());
-                    conversation.add_message(response);
+            print!("Assistant: ");
+            io::stdout().flush()?;
+            
+            match self.llm_client.send_conversation_stream(conversation, None, None).await {
+                Ok(mut stream) => {
+                    let mut full_response = String::new();
+                    
+                    while let Some(chunk_result) = stream.next().await {
+                        match chunk_result {
+                            Ok(chunk) => {
+                                if !chunk.is_empty() {
+                                    print!("{}", chunk);
+                                    io::stdout().flush()?;
+                                    full_response.push_str(&chunk);
+                                }
+                            }
+                            Err(e) => {
+                                eprintln!("\nStreaming error: {}", e);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if !full_response.is_empty() {
+                        conversation.add_message(ChatMessage::from_assistant(full_response));
+                    }
+                    println!(); // New line after streaming response
                 }
                 Err(e) => {
                     eprintln!("Error: {}", e);
